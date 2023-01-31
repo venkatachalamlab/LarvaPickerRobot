@@ -1,0 +1,174 @@
+# SmoothieBoard config file for larva picker robot.
+# Copyright 2016/2017, FlySorter LLC. See License file for more details.
+#
+
+# IMPORTANT:
+# There are different versions of the SmoothieBoard hardware, and some have different
+# motor driver chips. For example, the Smoothie 1.0 hardware uses Allegro A4982 chips,
+# which max out at 1/16 microstepping. The Smoothie 1.1 boards use A5984 chips, and are
+# set up to use 1/32 microstepping by default.
+#
+# This config relies on the board using 1/8 microstepping. Find out what chips your board uses,
+# and refer to the appropriate Allegro datasheet to see what the correct MS1, MS2 and optionally, MS3
+# jumper settings are. Then, solder or cut the jumpers on the Smoothie as appropriate.
+#
+# You *can* change the *_steps_per_mm values in the config to get the robot to travel the correct
+# distance on command, but finer microstepping (like 1/16 or 1/32) will result in lower torque
+# from the motors.
+
+# NOTE Lines must not exceed 132 characters
+# Robot module configurations : general handling of movement G-codes and slicing into moves
+default_feed_rate                            5000             # Default rate ( mm/minute ) for G1/G2/G3 moves
+default_seek_rate                            5000             # Default rate ( mm/minute ) for G0 moves
+mm_per_arc_segment                           0.0              # Arcs are cut into segments ( lines ), this is the length for
+mm_max_arc_error                             0.01             # these segments.  Smaller values mean more resolution,
+                                                              # higher values mean faster computation
+#mm_per_line_segment                          5                # Lines can be cut into segments ( not usefull with cartesian
+                                                              # coordinates robots ).
+
+# Arm solution configuration : Cartesian robot. Translates mm positions into stepper positions
+# 20 tooth pulley, 2mm belt pitch, 400 steps per rotation, 1/8 microstepping
+# Theoretical steps/mm => 80. But practically, after directing the robot to move
+# 100 in X and Y and measuring distance, needs adjustment. Robot traveled too far, so...
+alpha_steps_per_mm                           78.75               # Steps per mm for alpha stepper
+beta_steps_per_mm                            78.75               # Steps per mm for beta stepper
+# 1/10.4" per revolution, 200 steps, 1/16 microstepping => 1/2.4423 rev/mm * 200 steps / rev * 8 microsteps/step = 655.120
+gamma_steps_per_mm                           655.120             # Steps per mm for gamma stepper
+
+# Planner module configuration : Look-ahead and acceleration configuration
+planner_queue_size                           32               # DO NOT CHANGE THIS UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING
+acceleration                                 3000             # Acceleration in mm/second/second.
+#acceleration_ticks_per_second                1000             # Number of times per second the speed is updated
+junction_deviation                           0.05             # Similar to the old "max_jerk", in millimeters,
+                                                              # see https://github.com/grbl/grbl/blob/master/planner.c
+                                                              # and https://github.com/grbl/grbl/wiki/Configuring-Grbl-v0.8
+                                                              # Lower values mean being more careful, higher values means being
+                                                              # faster and have more jerk
+
+# Stepper module configuration
+microseconds_per_step_pulse                  1                # Duration of step pulses to stepper drivers, in microseconds
+base_stepping_frequency                      100000           # Base frequency for stepping, higher gives smoother movement
+
+# Cartesian axis speed limits
+x_axis_max_speed                             15000            # mm/min
+y_axis_max_speed                             15000            # mm/min
+z_axis_max_speed                             3000             # mm/min
+
+# X motor hooked up to M1 pins
+# Stepper module pins ( ports, and pin numbers, appending "!" to the number will invert a pin )
+alpha_step_pin                               2.0              # Pin for alpha stepper step signal
+alpha_dir_pin                                0.5              # Pin for alpha stepper direction
+alpha_en_pin                                 0.4              # Pin for alpha enable pin
+alpha_current                                1.65             # X stepper motor current
+alpha_max_rate                               15000.0          # mm/min
+
+# Y motor hooked up to M2 pins
+beta_step_pin                                2.1              # Pin for beta stepper step signal
+beta_dir_pin                                 0.11             # Pin for beta stepper direction
+beta_en_pin                                  0.10             # Pin for beta enable
+beta_current                                 1.95              # Y stepper motor current
+beta_max_rate                                15000.0          # mm/min
+
+# Z motor hooked up to M3 pins
+gamma_step_pin                               2.2              # Pin for gamma stepper step signal
+gamma_dir_pin                                0.20             # Pin for gamma stepper direction
+gamma_en_pin                                 0.19             # Pin for gamma enable
+gamma_current                                0.60             # Z stepper motor current
+gamma_max_rate                               3000.0          # mm/min
+
+# Serial communications configuration ( baud rate default to 9600 if undefined )
+uart0.baud_rate                              115200           # Baud rate for the default hardware serial port
+second_usb_serial_enable                     false            # This enables a second usb serial port (to have both pronterface
+                                                              # and a terminal connected)
+#leds_disable                                true             # disable using leds after config loaded
+#play_led_disable                            true             # disable the play led
+
+kill_button_enable                           true            # set to true to enable a kill button
+kill_button_pin                              2.12             # kill button pin. default is same as pause button 2.12 (2.11 is another good choice)
+#msd_disable                                 false            # disable the MSD (USB SDCARD) when set to true (needs special binary)
+#dfu_enable                                  false            # for linux developers, set to true to enable DFU
+
+# Need this to enable the current control for the motors
+currentcontrol_module_enable                 true
+
+
+# We have a pressure sensor set up as a "temperature" input. Note the "nc" value for the heater_pin -- this is a readonly thermistor.
+# Hotend temperature control configuration
+temperature_control.hotend.enable            true             # Whether to activate this ( "hotend" ) module at all.
+                                                              # All configuration is ignored if false.
+temperature_control.hotend.thermistor_pin    0.23             # Pin for the thermistor to read
+temperature_control.hotend.heater_pin        nc              # Pin that controls the heater, set to nc if a readonly thermistor is being defined
+temperature_control.hotend.thermistor        EPCOS100K        # see http://smoothieware.org/temperaturecontrol#toc5
+#temperature_control.hotend.beta             4066             # or set the beta value
+temperature_control.hotend.set_m_code        104              #
+temperature_control.hotend.set_and_wait_m_code 109            #
+temperature_control.hotend.designator        T                #
+#temperature_control.hotend.max_temp         250              # Set maximum temperature
+#temperature_control.hotend.min_temp         0                # Set minimum temperature - Will prevent heating below if set
+
+
+# Vacuum solenoid connected to first small MOSFET (Q8)
+# Don't forget to add a flyback diode if it's not included on the board
+switch.misc.enable                           true             #
+switch.misc.input_on_command                 M42              #
+switch.misc.input_off_command                M43              #
+switch.misc.output_pin                       2.6              #
+switch.misc.output_type                      digital          # just an on or off pin
+
+# Air solenoid connected to second small MOSFET (Q9)
+# Don't forget to add a flyback diode if it's not included on the board
+switch.misc2.enable                           true             #
+switch.misc2.input_on_command                 M44              #
+switch.misc2.input_off_command                M45              #
+switch.misc2.output_pin                       2.4              #
+switch.misc2.output_type                      digital          # just an on or off pin
+
+alpha_max_travel                             500              # How far it travels looking for the endstop before giving up
+beta_max_travel                              500              #
+gamma_max_travel                             500              #
+
+# Endstops
+endstops_enable                              true             # the endstop module is enabled by default and can be disabled here
+
+# The X min endstop is a photogate.
+alpha_min_endstop                            2.11^            # (previously 1.24^) add a ! to invert if endstop is NO connected to ground
+alpha_max_endstop                            nc				  # (previously 1.25^) NOTE set to nc if this is not installed
+alpha_homing_direction                       home_to_min      # or set to home_to_max and set alpha_max
+alpha_min                                    -3                # this gets loaded after homing when home_to_min is set
+alpha_max                                    200              # this gets loaded after homing when home_to_max is set
+
+# The Y min endstop is a physical switch mounted to the X/Y frame.
+beta_min_endstop                             1.26^            # 1.26^
+beta_max_endstop                             nc               # 1.27^
+beta_homing_direction                        home_to_min      #
+beta_min                                     -3               #
+beta_max                                     200              #
+
+# The Z min endstop is a microswitch mounted to the Z assembly.
+gamma_min_endstop                            nc            # 1.28^
+gamma_max_endstop                            1.28^            # 1.29^
+gamma_homing_direction                       home_to_max      #
+gamma_min                                    -20              #
+gamma_max                                    1                #
+
+# optional order in which axis will home, default is they all home at the same time,
+# if this is set it will force each axis to home one at a time in the specified order
+homing_order                                 ZXY              #
+
+# optional enable limit switches, actions will stop if any enabled limit switch is triggered
+alpha_limit_enable                          true             # set to true to enable X min and max limit switches
+beta_limit_enable                           true             # set to true to enable Y min and max limit switches
+gamma_limit_enable                          true             # set to true to enable Z min and max limit switches
+
+alpha_fast_homing_rate_mm_s                  80               # feedrates in mm/second
+beta_fast_homing_rate_mm_s                   80               # "
+gamma_fast_homing_rate_mm_s                  40                # "
+alpha_slow_homing_rate_mm_s                  20               # "
+beta_slow_homing_rate_mm_s                   20               # "
+gamma_slow_homing_rate_mm_s                  20                # "
+
+alpha_homing_retract_mm                      5                # distance in mm
+beta_homing_retract_mm                       5                # "
+gamma_homing_retract_mm                      1                # "
+
+endstop_debounce_count                       100              # uncomment if you get noise on your endstops, default is 100
