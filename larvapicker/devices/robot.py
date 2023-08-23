@@ -41,14 +41,25 @@ class Lydia:
               '\t\t[...       ]')
 
         # Check that calibration files and image file exist
-        if not h_file.exists() or not z_file.exists():
-            print(f'******* ERROR: Could not find calibration files or image file.'
-                  f'\n{h_file}\n{z_file}')
-            exit()
+        # Import calibration files into matrices or initialize with empties
+        if h_file.exists():
+            self.H = np.load(h_file, allow_pickle=True)
+        else:
+            print(f'******* ERROR: Could not find calibration file.\n{h_file}')
+            self.H = np.zeros((1, 4))
 
-        # Import calibration files into matrices
-        self.H = np.load(h_file, allow_pickle=True)
-        self.Z = np.load(z_file, allow_pickle=True)
+        if z_file.exists():
+            self.Z = np.load(z_file, allow_pickle=True)
+        else:
+            print(f'******* ERROR: Could not find height map file.\n{z_file}')
+            y_grid, x_grid = np.meshgrid(
+                np.array([30, 45, 80, 120, 160, 195, 210]),
+                np.array([40, 60, 100, 130, 160, 200, 220])
+            )
+            self.Z = np.empty((0, 3))
+            for x, y in zip(x_grid.ravel(), y_grid.ravel()):
+                self.Z = np.append(self.Z, [[x, y, -17]], axis=0)
+
         self.z_buffer = 0
         print('Calibration parameters: \t\tDONE\t\t[......    ]')
 
