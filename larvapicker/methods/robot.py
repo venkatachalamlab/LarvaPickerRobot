@@ -101,14 +101,17 @@ def get_homography(robot, cam_coord, H):
 
 
 def get_xytransform(x_cam, y_cam, H):
-    x_rbt, y_rbt = griddata(H[:, :2], H[:, 2:], [[x_cam, y_cam]], method='linear')[0]
-    if np.isnan(x_rbt) or np.isnan(y_rbt):
-        rdx = np.argsort(np.linalg.norm(H[:, :2] - np.array([[x_cam, y_cam]]), axis=-1))
-        h, status = cv2.findHomography(H[rdx[:16], :2], H[rdx[:16], 2:], cv2.LMEDS)
-        xy_list = cv2.perspectiveTransform(np.array([[[x_cam, y_cam]]], dtype=np.float32), h)
-        x_rbt, y_rbt = xy_list[0][0]
+    if len(H) < 8:
+        return 25, 10
 
-    return x_rbt, y_rbt
+    x_rbt, y_rbt = griddata(H[:, :2], H[:, 2:], [[x_cam, y_cam]], method='linear')[0]
+    if ~np.isnan(x_rbt) and ~np.isnan(y_rbt):
+        return x_rbt, y_rbt
+
+    rdx = np.argsort(np.linalg.norm(H[:, :2] - np.array([[x_cam, y_cam]]), axis=-1))
+    h, status = cv2.findHomography(H[rdx[:16], :2], H[rdx[:16], 2:], cv2.LMEDS)
+    xy_list = cv2.perspectiveTransform(np.array([[[x_cam, y_cam]]], dtype=np.float32), h)
+    return xy_list[0][0]
 
 
 def get_nearest_moat_xy(x, y):
