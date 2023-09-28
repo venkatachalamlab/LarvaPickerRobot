@@ -111,10 +111,14 @@ class Robot:
     # NOT current position *** #
     def get_position(self):
         position_string = self.smoothie.send_cmd_get_reply("M114\n")   # position read
-        x = float(position_string.split(' ')[2].split(':')[1])
-        y = float(position_string.split(' ')[3].split(':')[1])
-        z = float(position_string.split(' ')[4].split(':')[1])
-
+        try:
+            x = float(position_string.split(' ')[2].split(':')[1])
+            y = float(position_string.split(' ')[3].split(':')[1])
+            z = float(position_string.split(' ')[4].split(':')[1])
+        except:
+            print('******* ERROR: invalid response received\n'
+                  f'\t\t{position_string}')
+            x, y, z = 25, 10, 0
         return [x, y, z]
 
 
