@@ -172,10 +172,10 @@ def get_contours(img, instar):
                 c = np.array(c)
                 cntr_list.append(c[:, 0])
 
-    if len(cntr_list) > 0:
-        cntr_list = np.array(cntr_list)
-    else:
-        cntr_list = None
+    # if len(cntr_list) > 0:
+    #     cntr_list = np.array(cntr_list)
+    # else:
+    #     cntr_list = None
 
     return xy_list, cntr_list
 
