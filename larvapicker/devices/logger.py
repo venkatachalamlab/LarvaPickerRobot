@@ -155,7 +155,10 @@ class LarvaLogger:
         self.times.append(current_time)
         if len(self.times) > 100:
             self.times = self.times[-100:]
-        fps = len(self.times) / (self.times[-1] - self.times[0])
+        if len(self.times) < 3 or self.times[-1] - self.times[0] == 0:
+            fps = 0
+        else:
+            fps = len(self.times) / (self.times[-1] - self.times[0])
         print(f'Recording frame {self.fn+1} @ {current_time} ({fps}fps)')
 
         if img_str is not None:
