@@ -113,11 +113,14 @@ def flag(dataset_path, t_start, t_end):
         if n != 1:
             print('******* BAD FRAME. Skipping.')
             continue
-
         x, y = xy_list[0][0], xy_list[0][1]
         crop_contour = cntr_list - np.array([[x - w//2, y - h//2]])
 
         fcount += 1
+        if len(coordinates) > 1:
+            head = coordinates[-1, 3:5]
+            tail = coordinates[-1, 5:7]
+
         print("Select the head of the larvae.")
         im.mouseX, im.mouseY = 4*hx, 4*hy
         while True:
@@ -146,7 +149,6 @@ def flag(dataset_path, t_start, t_end):
         head_rec.write(np.uint8(head_crop))
 
         print("Select the tail of the larvae.")
-        tail = coordinates[i, 5:7]
         im.mouseX, im.mouseY = 4*tx, 4*ty
         while True:
             key = cv2.waitKey(10)
